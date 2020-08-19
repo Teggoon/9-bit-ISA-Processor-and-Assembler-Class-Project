@@ -1,8 +1,8 @@
 // Create Date:    2018.04.05
 // Design Name:    BasicProcessor
-// Module Name:    TopLevel 
+// Module Name:    TopLevel
 // CSE141L
-// partial only										   
+// partial only
 module TopLevel(		   // you will have the same 3 ports
     input        Reset,	   // init/reset, active high
 			     Start,    // start next program
@@ -13,8 +13,9 @@ module TopLevel(		   // you will have the same 3 ports
 wire [ 9:0] PgmCtr,        // program counter
 			PCTarg;
 wire [ 8:0] Instruction;   // our 9-bit opcode
-wire [ 7:0] ReadA, ReadB;  // reg_file outputs
-wire [ 7:0] InA, InB, 	   // ALU operand inputs
+wire [ 2:0] RegReadAddrA, RegReadAddrB, RegWriteAddr;  // ADDED reg_file outputs
+wire [ 7:0] RegReadOutA, RegReadOutB;  // RENAMED (original = ReadA, ReadB) reg_file outputs
+wire [ 7:0] ALUInA, ALUInB, 	   // ALU operand inputs
             ALU_out;       // ALU result
 wire [ 7:0] RegWriteValue, // data in to reg file
             MemWriteValue, // data in to data_memory
@@ -22,32 +23,40 @@ wire [ 7:0] RegWriteValue, // data in to reg file
 wire        MemWrite,	   // data_memory write enable
 			RegWrEn,	   // reg_file write enable
 			Zero,		   // ALU output = 0 flag
-            Jump,	       // to program counter: jump 
+      LoadInst, //ADDED
+            Jump,	       // to program counter: jump
             BranchEn;	   // to program counter: branch enable
 logic[15:0] CycleCt;	   // standalone; NOT PC!
 
 // Fetch = Program Counter + Instruction ROM
 // Program Counter
   InstFetch IF1 (
-	.Reset       (Reset   ) , 
-	.Start       (Start   ) ,  // SystemVerilg shorthand for .halt(halt), 
+	.Reset       (Reset   ) ,
+	.Start       (Start   ) ,  // SystemVerilg shorthand for .halt(halt),
 	.Clk         (Clk     ) ,  // (Clk) is required in Verilog, optional in SystemVerilog
 	.BranchAbs   (Jump    ) ,  // jump enable
 	.BranchRelEn (BranchEn) ,  // branch enable
 	.ALU_flag	 (Zero    ) ,
-    .Target      (PCTarg  ) ,
+  .Target      (PCTarg  ) ,
 	.ProgCtr     (PgmCtr  )	   // program count = index to instruction memory
-	);					  
+	);
 
 // Control decoder
   Ctrl Ctrl1 (
 	.Instruction  (Instruction), // from instr_ROM
 	.Jump         (Jump),		     // to PC
-	.BranchEn     (BranchEn)		 // to PC
+	.BranchEn     (BranchEn),		 // to PC
+  .RegWrEn      (RegWrEn),
+  .MemWrEn      (MemWrite),
+  .LoadInst     (LoadInst),
+  .PCTarg       (PCTarg),
+  .RegReadAddrA (RegReadAddrA),
+  .RegReadAddrB (RegReadAddrB),
+  .RegWriteAddr (RegWriteAddr)
   );
 // instruction ROM
   InstROM #(.W(9)) IR1(
-	.InstAddress   (PgmCtr), 
+	.InstAddress   (PgmCtr),
 	.InstOut       (Instruction)
 	);
 
@@ -56,39 +65,39 @@ logic[15:0] CycleCt;	   // standalone; NOT PC!
 // reg file
 	RegFile #(.W(8),.D(3)) RF1 (
 		.Clk    				  ,
-		.WriteEn   (RegWrEn)    , 
-		.RaddrA    (Instruction[5:3]),         //concatenate with 0 to give us 4 bits
-		.RaddrB    (Instruction[2:0]), 
-		.Waddr     (Instruction[5:3]), 	       // mux above
-		.DataIn    (RegWriteValue) , 
-		.DataOutA  (ReadA        ) , 
-		.DataOutB  (ReadB		 )
+		.WriteEn   (RegWrEn)    ,
+		.RaddrA    (RegReadAddrA),         //concatenate with 0 to give us 4 bits
+		.RaddrB    (RegReadAddrB),
+		.Waddr     (RegWriteAddr),
+		.DataIn    (RegWriteValue) ,
+		.DataOutA  (RegReadOutA        ) ,
+		.DataOutB  (RegReadOutB		 )
 	);
 // one pointer, two adjacent read accesses: (optional approach)
 //	.raddrA ({Instruction[5:3],1'b0});
 //	.raddrB ({Instruction[5:3],1'b1});
 
-    assign InA = ReadA;						          // connect RF out to ALU in
-	assign InB = ReadB;
+    assign ALUInA = RegReadOutA;						          // connect RF out to ALU in
+	assign ALUInB = RegReadOutB;
 	assign MemWrite = (Instruction == 9'h111);       // mem_store command
 	assign RegWriteValue = LoadInst? MemReadValue : ALU_out;  // 2:1 switch into reg_file
     ALU ALU1  (
-	  .InputA  (InA),
-	  .InputB  (InB), 
-	  .OP      (Instruction[8:6]),
+	  .InputA  (ALUInA),
+	  .InputB  (ALUInB),
+	  .OP      (Instruction[8:5]),
 	  .Out     (ALU_out),//regWriteValue),
 	  .Zero
 	  );
-  
+
 	DataMem DM1(
-		.DataAddress  (ReadA)    , 
-		.WriteEn      (MemWrite), 
-		.DataIn       (MemWriteValue), 
-		.DataOut      (MemReadValue)  , 
+		.DataAddress  (RegReadOutA)    ,
+		.WriteEn      (MemWrite),
+		.DataIn       (MemWriteValue),
+		.DataOut      (MemReadValue)  ,
 		.Clk 		  		     ,
 		.Reset		  (Reset)
 	);
-	
+
 // count number of instructions executed
 always_ff @(posedge Clk)
   if (Start == 1)	   // if(start)

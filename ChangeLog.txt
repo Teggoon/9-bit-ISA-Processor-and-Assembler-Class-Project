@@ -1,0 +1,42 @@
+---------------------
+Entry 1
+Daniel
+2020/8/8
+Changes:
+
+  Definitions.sv:
+  Mapped 16 operations to our ISA's op codes, changed op code size to 4 bits
+
+
+  RegFile.sv:
+  1. Reduced registers' address pointers to 3-bit size (line 13), since we don't need 16 pointers in total. Technically
+  we have only 4 registers that are accessible with a 2-bit address field, but a 5th one is reserved for Register_constant,
+  which we use to crunch numbers. Ctrl.sv will take instructions and output the right 3-bit reg address.
+
+
+  TopLevel.sv:
+
+  1. Renamed variables for more clarity (marked as "RENAMED" in comments)
+  2. Added 4 variables:
+   // wire [ 2:0] RegReadAddrA, RegReadAddrB, RegWriteAddr
+   // wire LoadInst
+  These are for choosing which register to read from, and which one to write to.
+  3. Connected above 3 variables to the inputs of the RegFile module (lines 61-63)
+  4. Connected multiple variables to the output of Ctrl.sv:
+  /*
+
+    .RegWrEn      (RegWrEn),	// line 49
+    .MemWrEn      (MemWrite),
+    .LoadInst     (LoadInst),
+    .PCTarg       (PCTarg),
+    .RegReadAddrA (RegReadAddrA),
+    .RegReadAddrB (RegReadAddrB),
+    .RegWriteAddr (RegWriteAddr)
+  */
+
+
+  Ctrl.sv:
+  1. increased PCTarg to a 9-bit variable, same size as TopLevel's PCTarg	(line 17)
+  2. Set MemWrEn, RegWrEn, and LoadInst to match our ISA design	(lines 21, 44, 46)
+
+---------------------
