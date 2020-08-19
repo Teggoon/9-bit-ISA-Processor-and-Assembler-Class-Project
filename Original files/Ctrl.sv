@@ -14,11 +14,33 @@ module Ctrl (
 			   Ack		       // "done w/ program"
   );
 
-assign MemWrEn = Instruction[8:6]==3'b110;
+	// mem_write is true on mem_op with flag 1
+	assign MemWrEn = Instruction[8:4]==5'b11011; 
 
-assign RegWrEn = Instruction[8:7]!=2'b11;
+	
+	// Operations that write to register:
+	// rc_add
+	// rc_sub
+	// rc_lsl
+	// rc_lsr
+	// rc_transfer
+	// rc_custom
+	// reg_copy
+	// add 
+	// sub
+	// XOR
+	// AND
+	// LSL
+	// LSR
+	// MEM_OP, flag 0
+	
+	// Operations that don't write to register:
+	// CMP				1110
+	// Branch			1111
+	// MEM_OP, flag 1		11011
+	assign RegWrEn = Instruction[8:6] != 3'b111 && Instruction[8:4] != 5'b11011;
 
-assign LoadInst = Instruction[8:6]==3'b110;  // calls out load specially
+	assign LoadInst = Instruction[8:4]==5'b11010;  // calls out load specially
 // reserve instruction = 9'b111111111; for Ack
 
 // jump on right shift that generates a zero
