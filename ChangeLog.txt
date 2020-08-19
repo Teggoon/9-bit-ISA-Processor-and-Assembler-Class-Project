@@ -40,3 +40,10 @@ Changes:
   2. Set MemWrEn, RegWrEn, and LoadInst to match our ISA design	(lines 21, 44, 46)
 
 ---------------------
+Entry 2
+Daniel
+2020/8/8
+Changes:
+
+InstROM.sv:
+1. Commented out reading from "machine_code.txt" to temporarily allow for compilation.
