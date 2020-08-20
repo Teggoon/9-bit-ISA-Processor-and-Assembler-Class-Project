@@ -5,16 +5,20 @@ import definitions::*;
 // outputs to program_counter (fetch unit)
 module Ctrl (
   input[ 8:0] Instruction,	   // machine code
-  output logic Jump     ,
-          BranchEn ,
+  output logic ConditionalJump     ,     // moves the program counter: ConditionalJump or increment normally
+          BranchAbsOrRel ,    // ConditionalJump relatively or absolutely
 			   RegWrEn  ,	   // write to reg_file (common)
 			   MemWrEn  ,	   // write to mem (store only)
 			   LoadInst	,	   // mem or ALU to reg_file ?
         RegReadAddrA, // ADDED register read address
-        RegReadAddrB,
-        RegWriteAddr,
+        RegReadAddrB, // ADDED register read address
+        RegWriteAddr, // ADDED
+        MiddleFlag1, // ADDED
+        MiddleFlag2, // ADDED
 			   Ack,		       // "done w/ program"
-  output logic [ 9:0] PCTarg
+  output logic [ 2:0] ConstantControl, // ADDED
+  output logic [ 9:0] PCTarg,
+  output logic [1:0] BranchConditions
   );
 
 	// mem_write is true on mem_op with flag 1
@@ -46,16 +50,31 @@ module Ctrl (
 	assign LoadInst = Instruction[8:4]==5'b11010;  // calls out load specially
 // reserve instruction = 9'b111111111; for Ack
 
-// jump on right shift that generates a zero
-// equiv to simply: assign Jump = Instrucxtion[2:0] == kRSH;
-always_comb
-  if(Instruction[2:0] ==  kLSR)
-    Jump = 1;
-  else
-    Jump = 0;
+  always_comb begin
+    RegReadAddrA = Instruction[1:0];
+    RegReadAddrB = Instruction[3:2];
+    MiddleFlag1 = Instruction[4];
+    MiddleFlag2 = Instruction[5];
+    ConstantControl = Instruction[4:2];
+    RegWriteAddr = Instruction[1:0];
+    if (Instruction[8:5] == 4'b0000 ||    // rc_add
+        Instruction[8:5] == 4'b0001 ||    // rc_sub
+        Instruction[8:5] == 4'b0010 ||    // rc_lsl
+        Instruction[8:5] == 4'b0011 ||    // rc_lsr
+        Instruction[8:4] == 5'b01000       // rc_transfer
+        ) begin
+          RegWriteAddr = 3'b100;  // R5 is RC
+        end
+  end
+
+// ConditionalJump on right shift that generates a zero
+// equiv to simply: assign ConditionalJump = Instrucxtion[2:0] == kRSH;
+
+assign BranchConditions = Instruction[3:2];
 
 // branch every time instruction = 9'b?????1111;
-assign BranchEn = &Instruction[3:0];
+assign ConditionalJump = Instruction[8:5] == 4'b1111;
+assign BranchAbsOrRel = Instruction[4]; // 0 = absolute, 1 = relative
 
 // route data memory --> reg_file for loads
 //   whenever instruction = 9'b110??????;

@@ -1,4 +1,4 @@
----------------------
+---------------------------------------------------------------------------------------------------------
 Entry 1
 Daniel
 2020/8/8
@@ -39,11 +39,38 @@ Changes:
   1. increased PCTarg to a 9-bit variable, same size as TopLevel's PCTarg	(line 17)
   2. Set MemWrEn, RegWrEn, and LoadInst to match our ISA design	(lines 21, 44, 46)
 
----------------------
+---------------------------------------------------------------------------------------------------------
 Entry 2
 Daniel
 2020/8/8
 Changes:
 
-InstROM.sv:
-1. Commented out reading from "machine_code.txt" to temporarily allow for compilation.
+  InstROM.sv:
+  1. Commented out reading from "machine_code.txt" to temporarily allow for compilation.
+
+  TopLevel.sv:
+  1. Added wires:
+  // wire MiddleFlag1;  // Used for rc_transfer, arithmetic & logical operations, mem_op. Is the 4th bit in the instruction
+  // wire MiddleFlag2;  // Used for rc_transfer. Is the 5th bit in the instruction
+  // wire ConditionalJump   // Whether we want to check conditions for a jump or nah
+  // wire BranchAbsOrRel    // check whether branching relatviely or absolutely
+  // wire [2:0] ConstantControl // Used for rc_custom
+  // wire [2:0] BranchConditions
+
+  2. Added logic:
+  // logic Zero           // ALU flag
+  // logic Negative      // ALU flag
+  // logic ActuallyJump   // check if we really want to jump given conditions
+
+  3. Above wires and logic connected to Ctrl.sv, and InstFetch.sv ALU.sv
+  4. Added combinational logic controlling branching
+
+  ALU.sv:
+  1. Filled in most arithmetic and logical operations. Rest marked as TODO
+  2. Added wires that correspond to TopLevel.sv's new wires and logics
+
+  Ctrl.sv:
+  1. Added wires that correspond to TopLevel.sv's new wires and logics
+  2. Set the values of several output wires in combinational blocks
+  Note on this one: Notably, Ack and PCTarg are still unset. Mem_op's impact on
+  RegReadAddrA and RegReadAddrB are still unknown.

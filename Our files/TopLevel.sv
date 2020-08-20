@@ -21,12 +21,44 @@ wire [ 7:0] RegWriteValue, // data in to reg file
             MemWriteValue, // data in to data_memory
 	   	    MemReadValue;  // data out from data_memory
 wire        MemWrite,	   // data_memory write enable
-			RegWrEn,	   // reg_file write enable
-			Zero,		   // ALU output = 0 flag
-      LoadInst, //ADDED
-            Jump,	       // to program counter: jump
-            BranchEn;	   // to program counter: branch enable
+            RegWrEn,	   // reg_file write enable
+            LoadInst, //ADDED
+            ConditionalJump,	       // Whether we're supposed to jump conditionally
+            BranchAbsOrRel,	// to program counter: relative or absolute
+            MiddleFlag1,  // ADDED Used for rc_transfer, arithmetic & logical operations, mem_op
+            MiddleFlag2;  // ADDED Used for rc_transfer only
+wire [ 1:0] ConstantControl,  // ADDED Used for rc_custom
+            BranchConditions; // ADDED 2 bits that are used to check the conditions in which we branch
 logic[15:0] CycleCt;	   // standalone; NOT PC!
+
+logic       ActuallyJump, // Whether we're gonna jump given the conditions
+            Zero,         // ALU flag 1
+            Negative;      // ALU flag 2
+
+
+// Combinational Logic setting ActuallyJump's value
+always_comb begin
+ ActuallyJump = 1'b0;
+ if (ConditionalJump) begin
+    case (BranchConditions)
+      'b00 : begin                  // Greater Than: Operand A > Operand B
+        ActuallyJump = !Zero && !Negative;
+      end
+      'b01: begin                  // Less Than: Operand A < Operand B
+        ActuallyJump = !Zero && Negative;
+      end
+      'b10: begin                  // Equal to: Operand A == Operand B
+        ActuallyJump = Zero;
+      end
+      'b11: begin                  // Unconditional Jump
+        ActuallyJump = 1;
+      end
+    endcase
+  end
+end
+
+assign BranchAbsOrRel = ConditionalJump && MiddleFlag1;
+
 
 // Fetch = Program Counter + Instruction ROM
 // Program Counter
@@ -34,9 +66,8 @@ logic[15:0] CycleCt;	   // standalone; NOT PC!
 	.Reset       (Reset   ) ,
 	.Start       (Start   ) ,  // SystemVerilg shorthand for .halt(halt),
 	.Clk         (Clk     ) ,  // (Clk) is required in Verilog, optional in SystemVerilog
-	.BranchAbs   (Jump    ) ,  // jump enable
-	.BranchRelEn (BranchEn) ,  // branch enable
-	.ALU_flag	 (Zero    ) ,
+	.Jump   (ActuallyJump    ) ,  // Jump enable
+	.BranchAbsOrRel (BranchAbsOrRel) ,  // branch relatively or absolutely
   .Target      (PCTarg  ) ,
 	.ProgCtr     (PgmCtr  )	   // program count = index to instruction memory
 	);
@@ -44,15 +75,19 @@ logic[15:0] CycleCt;	   // standalone; NOT PC!
 // Control decoder
   Ctrl Ctrl1 (
 	.Instruction  (Instruction), // from instr_ROM
-	.Jump         (Jump),		     // to PC
-	.BranchEn     (BranchEn),		 // to PC
+	.ConditionalJump  (ConditionalJump),		     // to PC
+	.BranchAbsOrRel (BranchAbsOrRel),		 // to PC
   .RegWrEn      (RegWrEn),
   .MemWrEn      (MemWrite),
   .LoadInst     (LoadInst),
   .PCTarg       (PCTarg),
   .RegReadAddrA (RegReadAddrA),
   .RegReadAddrB (RegReadAddrB),
-  .RegWriteAddr (RegWriteAddr)
+  .RegWriteAddr (RegWriteAddr),
+  .MiddleFlag1   (MiddleFlag1),
+  .MiddleFlag2   (MiddleFlag2),
+  .ConstantControl  (ConstantControl),
+  .BranchConditions (BranchConditions)
   );
 // instruction ROM
   InstROM #(.W(9)) IR1(
@@ -77,7 +112,7 @@ logic[15:0] CycleCt;	   // standalone; NOT PC!
 //	.raddrA ({Instruction[5:3],1'b0});
 //	.raddrB ({Instruction[5:3],1'b1});
 
-    assign ALUInA = RegReadOutA;						          // connect RF out to ALU in
+    assign ALUInA = RegReadOutA;						          // TODO: not simple as that
 	assign ALUInB = RegReadOutB;
 	assign MemWrite = (Instruction == 9'h111);       // mem_store command
 	assign RegWriteValue = LoadInst? MemReadValue : ALU_out;  // 2:1 switch into reg_file
@@ -86,7 +121,8 @@ logic[15:0] CycleCt;	   // standalone; NOT PC!
 	  .InputB  (ALUInB),
 	  .OP      (Instruction[8:5]),
 	  .Out     (ALU_out),//regWriteValue),
-	  .Zero
+	  .Zero    (Zero),
+    .Negative (Negative)
 	  );
 
 	DataMem DM1(
