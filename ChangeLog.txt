@@ -1,7 +1,7 @@
 ---------------------------------------------------------------------------------------------------------
 Entry 1
 Daniel
-2020/8/8
+2020/8/19
 Changes:
 
   Definitions.sv:
@@ -42,7 +42,7 @@ Changes:
 ---------------------------------------------------------------------------------------------------------
 Entry 2
 Daniel
-2020/8/8
+2020/8/20
 Changes:
 
   InstROM.sv:
@@ -74,3 +74,18 @@ Changes:
   2. Set the values of several output wires in combinational blocks
   Note on this one: Notably, Ack and PCTarg are still unset. Mem_op's impact on
   RegReadAddrA and RegReadAddrB are still unknown.
+
+---------------------------------------------------------------------------------------------------------
+Entry 3
+Daniel
+2020/8/21
+Changes:
+
+ALU.sv:
+1. Added input variable:
+// input [2:0] ControlFlags
+2. Added rc_custom's proper numbers
+3. 
+
+TopLevel:
+1. Connected ConstantControl to ALU's ControlFlags

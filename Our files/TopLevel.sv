@@ -114,12 +114,12 @@ assign BranchAbsOrRel = ConditionalJump && MiddleFlag1;
 
     assign ALUInA = RegReadOutA;						          // TODO: not simple as that
 	assign ALUInB = RegReadOutB;
-	assign MemWrite = (Instruction == 9'h111);       // mem_store command
 	assign RegWriteValue = LoadInst? MemReadValue : ALU_out;  // 2:1 switch into reg_file
     ALU ALU1  (
 	  .InputA  (ALUInA),
 	  .InputB  (ALUInB),
 	  .OP      (Instruction[8:5]),
+    .ControlFlags  (ConstantControl),
 	  .Out     (ALU_out),//regWriteValue),
 	  .Zero    (Zero),
     .Negative (Negative)
