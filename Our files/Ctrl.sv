@@ -10,13 +10,13 @@ module Ctrl (
 			   RegWrEn  ,	   // write to reg_file (common)
 			   MemWrEn  ,	   // write to mem (store only)
 			   LoadInst	,	   // mem or ALU to reg_file ?
-        RegReadAddrA, // ADDED register read address
-        RegReadAddrB, // ADDED register read address
-        RegWriteAddr, // ADDED
         MiddleFlag1, // ADDED
         MiddleFlag2, // ADDED
 			   Ack,		       // "done w/ program"
   output logic [ 2:0] ConstantControl, // ADDED
+  output logic [3:0] RegReadAddrA, // ADDED register read address
+                    RegReadAddrB, // ADDED register read address
+                    RegWriteAddr, // ADDED
   output logic [ 9:0] PCTarg,
   output logic [1:0] BranchConditions
   );
@@ -61,10 +61,25 @@ module Ctrl (
         Instruction[8:5] == 4'b0001 ||    // rc_sub
         Instruction[8:5] == 4'b0010 ||    // rc_lsl
         Instruction[8:5] == 4'b0011 ||    // rc_lsr
-        Instruction[8:4] == 5'b01000       // rc_transfer
+        Instruction[8:4] == 5'b01000       // rc_transfer, load into
         ) begin
           RegWriteAddr = 3'b100;  // R5 is RC
         end
+    if (Instruction[8:4] == 5'b01001) begin // rc_transfer, store out of
+      RegWriteAddr = Instruction[2:0];    // 3-bit, 8 potential registers
+    end
+
+    if (Instruction[8:5] == 4'b0110) begin  // reg_copy
+    if (Instruction[4] == 1'b0) begin       // 2-bit addr to 2-bit addr reg_copy
+      RegReadAddrA = Instruction[1:0];
+      RegReadAddrB = Instruction[3:2];
+    end
+    else begin                              // 4-bit reg_copy using rc
+      RegWriteAddr = Instruction[3:0];
+      RegReadAddrA = 3'b100;
+      RegReadAddrB = 3'b100;
+    end
+    end
   end
 
 // ConditionalJump on right shift that generates a zero

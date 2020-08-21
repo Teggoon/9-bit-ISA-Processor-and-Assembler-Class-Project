@@ -13,7 +13,7 @@ module TopLevel(		   // you will have the same 3 ports
 wire [ 9:0] PgmCtr,        // program counter
 			PCTarg;
 wire [ 8:0] Instruction;   // our 9-bit opcode
-wire [ 2:0] RegReadAddrA, RegReadAddrB, RegWriteAddr;  // ADDED reg_file outputs
+wire [ 3:0] RegReadAddrA, RegReadAddrB, RegWriteAddr;  // ADDED reg_file outputs
 wire [ 7:0] RegReadOutA, RegReadOutB;  // RENAMED (original = ReadA, ReadB) reg_file outputs
 wire [ 7:0] ALUInA, ALUInB, 	   // ALU operand inputs
             ALU_out;       // ALU result

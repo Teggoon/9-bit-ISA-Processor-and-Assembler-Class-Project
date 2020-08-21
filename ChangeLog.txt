@@ -84,8 +84,11 @@ Changes:
 ALU.sv:
 1. Added input variable:
 // input [2:0] ControlFlags
-2. Added rc_custom's proper numbers
-3. 
+2. Added rc_custom's proper constant numbers
+3. Updated reg_copy to include both new and old reg_copy operations
 
 TopLevel:
 1. Connected ConstantControl to ALU's ControlFlags
+
+General:
+1. Increased register address size to 4 bits
