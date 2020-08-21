@@ -85,7 +85,9 @@ ALU.sv:
 1. Added input variable:
 // input [2:0] ControlFlags
 2. Added rc_custom's proper constant numbers
-3. Updated reg_copy to include both new and old reg_copy operations
+
+Ctrl.sv:
+1. Updated reg_copy to include both new and old reg_copy operations
 
 TopLevel:
 1. Connected ConstantControl to ALU's ControlFlags
