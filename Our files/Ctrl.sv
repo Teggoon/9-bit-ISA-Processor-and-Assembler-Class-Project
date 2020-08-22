@@ -63,7 +63,7 @@ module Ctrl (
         Instruction[8:5] == 4'b0011 ||    // rc_lsr
         Instruction[8:4] == 5'b01000       // rc_transfer, load into
         ) begin
-          RegWriteAddr = 3'b100;  // R5 is RC
+          RegWriteAddr = 4'b1111;  // R16 is RC
         end
     if (Instruction[8:4] == 5'b01001) begin // rc_transfer, store out of
       RegWriteAddr = Instruction[2:0];    // 3-bit, 8 potential registers
@@ -76,8 +76,8 @@ module Ctrl (
     end
     else begin                              // 4-bit reg_copy using rc
       RegWriteAddr = Instruction[3:0];
-      RegReadAddrA = 3'b100;
-      RegReadAddrB = 3'b100;
+      RegReadAddrA = 4'b1111;
+      RegReadAddrB = 4'b1111;
     end
     end
   end

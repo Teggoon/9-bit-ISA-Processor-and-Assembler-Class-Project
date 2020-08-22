@@ -94,3 +94,13 @@ TopLevel:
 
 General:
 1. Increased register address size to 4 bits
+
+---------------------------------------------------------------------------------------------------------
+Entry 4
+Daniel
+2020/8/21
+Changes:
+
+1. Added testbench for ALU, and a testbench to look at TopLevel's workings through its registers (no datamem tests)
+2. RC is now R15 instead of R0
+3. Added a test1.txt file for testing TopLevel
