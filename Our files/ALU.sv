@@ -22,18 +22,22 @@ module ALU(
   always_comb begin
     Out = 0;                             // No Op = default
     case(OP)
-      kRC_ADD : Out = InputA + InputB;
+      kRC_ADD : begin
+      Out = InputA + InputB;
+      //$display("Input A: %d", InputA);
+      //$display("Input B: %d", InputB);
+      end
       kRC_SUB : Out = InputA - InputB;
       kRC_LSL : Out = InputA << InputB;
       kRC_LSR : Out = InputA >> InputB;
       kRC_TRANSFER : Out = InputB;
       kRC_CUSTOM : begin
         case (ControlFlags)
-          3'b000 : Out = 4'b1111;   // Decimal 15
-          3'b001 : Out = 6'b111101;   // Decimal 61
-          3'b011 : Out = 6'b111110;   // Decimal 62
-          3'b100 : Out = 6'b111111;   // Decimal 63
-          3'b101 : Out = 7'b1000000;   // Decimal 64
+          3'b000 : Out = 8'b00001111;   // Decimal 15
+          3'b001 : Out = 8'b00111101;   // Decimal 61
+          3'b011 : Out = 8'b00111110;   // Decimal 62
+          3'b100 : Out = 8'b00111111;   // Decimal 63
+          3'b101 : Out = 8'b01000000;   // Decimal 64
           3'b110 : Out = 8'b10000000;   // Decimal 128
         endcase
         end

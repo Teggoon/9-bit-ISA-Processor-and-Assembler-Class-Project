@@ -81,19 +81,19 @@ Daniel
 2020/8/21
 Changes:
 
-ALU.sv:
-1. Added input variable:
-// input [2:0] ControlFlags
-2. Added rc_custom's proper constant numbers
+  ALU.sv:
+  1. Added input variable:
+  // input [2:0] ControlFlags
+  2. Added rc_custom's proper constant numbers
 
-Ctrl.sv:
-1. Updated reg_copy to include both new and old reg_copy operations
+  Ctrl.sv:
+  1. Updated reg_copy to include both new and old reg_copy operations
 
-TopLevel:
-1. Connected ConstantControl to ALU's ControlFlags
+  TopLevel:
+  1. Connected ConstantControl to ALU's ControlFlags
 
-General:
-1. Increased register address size to 4 bits
+  General:
+  1. Increased register address size to 4 bits
 
 ---------------------------------------------------------------------------------------------------------
 Entry 4
@@ -101,6 +101,16 @@ Daniel
 2020/8/21
 Changes:
 
-1. Added testbench for ALU, and a testbench to look at TopLevel's workings through its registers (no datamem tests)
-2. RC is now R15 instead of R0
-3. Added a test1.txt file for testing TopLevel
+  1. Added testbench for ALU, and a testbench to look at TopLevel's workings through its registers (no datamem tests)
+  2. RC is now R15 instead of R0
+  3. Added a test1.txt file for testing TopLevel
+
+
+---------------------------------------------------------------------------------------------------------
+Entry 5
+Daniel
+2020/8/22
+Changes:
+  1. Modified ctrl, ALU, and toplevel connections to fit these operations, which have been tested to be working:
+  - All of RC's loading, storing, and arithmetic/logical perations
+  - both options of reg_copy

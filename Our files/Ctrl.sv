@@ -60,13 +60,24 @@ module Ctrl (
     if (Instruction[8:5] == 4'b0000 ||    // rc_add
         Instruction[8:5] == 4'b0001 ||    // rc_sub
         Instruction[8:5] == 4'b0010 ||    // rc_lsl
-        Instruction[8:5] == 4'b0011 ||    // rc_lsr
-        Instruction[8:4] == 5'b01000       // rc_transfer, load into
+        Instruction[8:5] == 4'b0011    // rc_lsr
         ) begin
-          RegWriteAddr = 4'b1111;  // R16 is RC
+          RegWriteAddr = 4'b1111;  // R15 is RC
         end
-    if (Instruction[8:4] == 5'b01001) begin // rc_transfer, store out of
-      RegWriteAddr = Instruction[2:0];    // 3-bit, 8 potential registers
+
+    if (Instruction[8:7] == 2'b00)
+      RegReadAddrA = 4'b1111;
+
+    if (Instruction[8:5] == 4'b0100) begin // rc_transfer, store out of
+      if (Instruction[4] == 1'b0) begin     // load into rc
+        RegWriteAddr = 4'b1111;  // Destination is RC
+        if (Instruction[3] == 1'b0)  //  Read value from a reg
+          RegReadAddrB = Instruction[2:0];  // 3-bit, 8 potential registers
+      end
+      else begin                            // 01001 export out of rc into a reg
+        RegReadAddrB = 4'b1111;
+        RegWriteAddr = Instruction[3:0];    // 4-bit, 16 potential registers
+      end
     end
 
     if (Instruction[8:5] == 4'b0110) begin  // reg_copy
@@ -74,10 +85,9 @@ module Ctrl (
       RegReadAddrA = Instruction[1:0];
       RegReadAddrB = Instruction[3:2];
     end
-    else begin                              // 4-bit reg_copy using rc
-      RegWriteAddr = Instruction[3:0];
+    else begin                              // 4-bit reg_copy using rc. RC holds Rd addr, operand = Rm addr
       RegReadAddrA = 4'b1111;
-      RegReadAddrB = 4'b1111;
+      RegReadAddrB = Instruction[3:0];    // Get Rm addr
     end
     end
   end

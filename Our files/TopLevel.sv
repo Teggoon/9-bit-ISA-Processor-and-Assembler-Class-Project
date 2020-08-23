@@ -13,7 +13,7 @@ module TopLevel(		   // you will have the same 3 ports
 wire [ 9:0] PgmCtr,        // program counter
 			PCTarg;
 wire [ 8:0] Instruction;   // our 9-bit opcode
-wire [ 3:0] RegReadAddrA, RegReadAddrB, RegWriteAddr;  // ADDED reg_file outputs
+wire [ 3:0] RegReadAddrA, RegReadAddrB, RegWriteAddr, FinalRegWriteAddr;  // ADDED reg_file outputs
 wire [ 7:0] RegReadOutA, RegReadOutB;  // RENAMED (original = ReadA, ReadB) reg_file outputs
 wire [ 7:0] ALUInA, ALUInB, 	   // ALU operand inputs
             ALU_out;       // ALU result
@@ -27,8 +27,8 @@ wire        MemWrite,	   // data_memory write enable
             BranchAbsOrRel,	// to program counter: relative or absolute
             MiddleFlag1,  // ADDED Used for rc_transfer, arithmetic & logical operations, mem_op
             MiddleFlag2;  // ADDED Used for rc_transfer only
-wire [ 1:0] ConstantControl,  // ADDED Used for rc_custom
-            BranchConditions; // ADDED 2 bits that are used to check the conditions in which we branch
+wire [ 2:0] ConstantControl;  // ADDED Used for rc_custom
+wire [ 1:0] BranchConditions; // ADDED 2 bits that are used to check the conditions in which we branch
 logic[15:0] CycleCt;	   // standalone; NOT PC!
 
 logic       ActuallyJump, // Whether we're gonna jump given the conditions
@@ -95,15 +95,16 @@ assign BranchAbsOrRel = ConditionalJump && MiddleFlag1;
 	.InstOut       (Instruction)
 	);
 
+  assign FinalRegWriteAddr = Instruction[8:4] == 5'b01101 ? RegReadOutA : RegWriteAddr;
   assign LoadInst = Instruction[8:6]==3'b110;  // calls out load specially
   assign Ack = &Instruction;
 // reg file
-	RegFile #(.W(8),.D(3)) RF1 (
+	RegFile #(.W(8),.D(4)) RF1 (
 		.Clk    				  ,
 		.WriteEn   (RegWrEn)    ,
 		.RaddrA    (RegReadAddrA),         //concatenate with 0 to give us 4 bits
 		.RaddrB    (RegReadAddrB),
-		.Waddr     (RegWriteAddr),
+		.Waddr     (FinalRegWriteAddr),
 		.DataIn    (RegWriteValue) ,
 		.DataOutA  (RegReadOutA        ) ,
 		.DataOutB  (RegReadOutB		 )
@@ -112,8 +113,11 @@ assign BranchAbsOrRel = ConditionalJump && MiddleFlag1;
 //	.raddrA ({Instruction[5:3],1'b0});
 //	.raddrB ({Instruction[5:3],1'b1});
 
-    assign ALUInA = RegReadOutA;						          // TODO: not simple as that
-	assign ALUInB = RegReadOutB;
+  assign ALUInA = RegReadOutA;
+
+  assign ALUInB = Instruction[8:3] == 6'b010001 ? Instruction[2:0] :
+  (Instruction[8:7] == 2'b00 ? Instruction[4:0]: RegReadOutB) ;
+
 	assign RegWriteValue = LoadInst? MemReadValue : ALU_out;  // 2:1 switch into reg_file
     ALU ALU1  (
 	  .InputA  (ALUInA),

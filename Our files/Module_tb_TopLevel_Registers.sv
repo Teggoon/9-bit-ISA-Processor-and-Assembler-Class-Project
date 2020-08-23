@@ -5,7 +5,7 @@
 // This is NOT synthesizable; use for logic simulation only
 // Verilog Test Fixture created for module: TopLevel
 
-module TopLevel_tb;	     // Lab 17
+module Module_tb_TopLevel_Registers;	     // Lab 17
 
 // To DUT Inputs
   bit  Init = 'b1,
@@ -29,15 +29,19 @@ initial begin
 
 // Initialize DUT's register file
   for(int j=0; j<16; j++)
-    DUT.RF1.Registers[j] = 8'b0;    // default -- clear it
-
+    DUT.RF1.Registers[j] = 8'b1;    // default -- clear it
 
   #10ns Req = 0;
 
-  #10ns
-  $display(DUT.RF1.Registers[j]);
 
-  #10ns $stop;
+
+  #150ns
+
+  for(int j=0; j<16; j++)
+    $display("R %d value: %b", j, DUT.RF1.Registers[j]);
+  #10ns
+
+  $stop;
 end
 
 always begin   // clock period = 10 Verilog time units

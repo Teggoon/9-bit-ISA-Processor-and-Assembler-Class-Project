@@ -30,8 +30,11 @@ assign      DataOutA = Registers[RaddrA];	  // can't read from addr 0, just like
 always_comb DataOutB = Registers[RaddrB];    // can read from addr 0, just like ARM
 
 // sequential (clocked) writes
-always_ff @ (posedge Clk)
+always_ff @ (posedge Clk) begin
+  //$display("Register write Enable: %b", WriteEn);
   if (WriteEn)	                             // works just like data_memory writes
+    //$display("Register write Address: %d", Waddr);
+    //$display("Register write Data In: %d", DataIn);
     Registers[Waddr] <= DataIn;
-
+end
 endmodule

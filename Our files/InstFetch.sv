@@ -27,9 +27,10 @@ module InstFetch(
 	  else
 	   ProgCtr <= Target + ProgCtr;    // Relative jump
   end
-	else
+	else begin
+    //$display("\n\nIncreased program counter: %d" , ProgCtr);
 	  ProgCtr <= ProgCtr+'b1; 	        // default increment (no need for ARM/MIPS +4 -- why?)
-
+    end
 endmodule
 
 /* Note about Start: if your programs are spread out, with a gap in your machine code listing, you will want
