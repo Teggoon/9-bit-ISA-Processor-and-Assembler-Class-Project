@@ -112,5 +112,12 @@ Daniel
 2020/8/22
 Changes:
   1. Modified ctrl, ALU, and toplevel connections to fit these operations, which have been tested to be working:
-  - All of RC's loading, storing, and arithmetic/logical perations
+  - All of RC's loading, storing, and arithmetic/logical operations
   - both options of reg_copy
+
+---------------------------------------------------------------------------------------------------------
+Entry 6
+Daniel
+2020/8/23
+Changes:
+  1. Tested and implemented MEM_OP (both store and load) with a datamem testbench.

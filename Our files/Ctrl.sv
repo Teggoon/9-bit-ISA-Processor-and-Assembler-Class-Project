@@ -90,6 +90,7 @@ module Ctrl (
       RegReadAddrB = Instruction[3:0];    // Get Rm addr
     end
     end
+
   end
 
 // ConditionalJump on right shift that generates a zero

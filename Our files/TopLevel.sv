@@ -96,7 +96,7 @@ assign BranchAbsOrRel = ConditionalJump && MiddleFlag1;
 	);
 
   assign FinalRegWriteAddr = Instruction[8:4] == 5'b01101 ? RegReadOutA : RegWriteAddr;
-  assign LoadInst = Instruction[8:6]==3'b110;  // calls out load specially
+  assign LoadInst = Instruction[8:4]==5'b11010;  // calls out load specially
   assign Ack = &Instruction;
 // reg file
 	RegFile #(.W(8),.D(4)) RF1 (
@@ -118,6 +118,9 @@ assign BranchAbsOrRel = ConditionalJump && MiddleFlag1;
   assign ALUInB = Instruction[8:3] == 6'b010001 ? Instruction[2:0] :
   (Instruction[8:7] == 2'b00 ? Instruction[4:0]: RegReadOutB) ;
 
+  assign MemWriteValue = RegReadOutA;
+
+
 	assign RegWriteValue = LoadInst? MemReadValue : ALU_out;  // 2:1 switch into reg_file
     ALU ALU1  (
 	  .InputA  (ALUInA),
@@ -130,7 +133,7 @@ assign BranchAbsOrRel = ConditionalJump && MiddleFlag1;
 	  );
 
 	DataMem DM1(
-		.DataAddress  (RegReadOutA)    ,
+		.DataAddress  (RegReadOutB)    ,
 		.WriteEn      (MemWrite),
 		.DataIn       (MemWriteValue),
 		.DataOut      (MemReadValue)  ,
