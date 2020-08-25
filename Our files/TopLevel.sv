@@ -11,6 +11,7 @@ module TopLevel(		   // you will have the same 3 ports
     );
 
 wire [ 9:0] PgmCtr,        // program counter
+      Intermediate_Targ,
 			PCTarg;
 wire [ 8:0] Instruction;   // our 9-bit opcode
 wire [ 3:0] RegReadAddrA, RegReadAddrB, RegWriteAddr, FinalRegWriteAddr;  // ADDED reg_file outputs
@@ -51,14 +52,16 @@ always_comb begin
         ActuallyJump = Zero;
       end
       'b11: begin                  // Unconditional Jump
-        ActuallyJump = 1;
+        ActuallyJump = 1'b1;
       end
     endcase
   end
 end
 
 assign BranchAbsOrRel = ConditionalJump && MiddleFlag1;
-
+assign Intermediate_Targ[9:8] = (RegReadOutA[7] == 1'b1) ? 2'b11 : 2'b00;
+assign Intermediate_Targ[7:0] = RegReadOutA;
+assign PCTarg = ActuallyJump ? Intermediate_Targ : 1'b0;
 
 // Fetch = Program Counter + Instruction ROM
 // Program Counter
@@ -80,7 +83,6 @@ assign BranchAbsOrRel = ConditionalJump && MiddleFlag1;
   .RegWrEn      (RegWrEn),
   .MemWrEn      (MemWrite),
   .LoadInst     (LoadInst),
-  .PCTarg       (PCTarg),
   .RegReadAddrA (RegReadAddrA),
   .RegReadAddrB (RegReadAddrB),
   .RegWriteAddr (RegWriteAddr),
@@ -95,7 +97,7 @@ assign BranchAbsOrRel = ConditionalJump && MiddleFlag1;
 	.InstOut       (Instruction)
 	);
 
-  assign FinalRegWriteAddr = Instruction[8:4] == 5'b01101 ? RegReadOutA : RegWriteAddr;
+  assign FinalRegWriteAddr = (Instruction[8:4] == 5'b01101 ) ? RegReadOutA : RegWriteAddr;
   assign LoadInst = Instruction[8:4]==5'b11010;  // calls out load specially
   assign Ack = &Instruction;
 // reg file
@@ -115,8 +117,11 @@ assign BranchAbsOrRel = ConditionalJump && MiddleFlag1;
 
   assign ALUInA = RegReadOutA;
 
-  assign ALUInB = Instruction[8:3] == 6'b010001 ? Instruction[2:0] :
-  (Instruction[8:7] == 2'b00 ? Instruction[4:0]: RegReadOutB) ;
+  assign ALUInB = Instruction[8:7] == 2'b00 ? Instruction[4:0] : (
+  (Instruction[8:5] == 4'b0111 ||
+  Instruction[8:7] == 2'b10 ||
+  Instruction[8:5] == 4'b1100 ||
+  Instruction[8:5] == 4'b1110) && Instruction[4] == 1'b1 ? Instruction[3:2] : RegReadOutB ) ;
 
   assign MemWriteValue = RegReadOutA;
 

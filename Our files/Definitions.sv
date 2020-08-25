@@ -4,14 +4,14 @@
 // import package into each module that needs it
 //   packages very useful for declaring global variables
 package definitions;
-    
+
 // Instruction map
 	const logic [3:0]kRC_ADD  	= 4'b0000;
 	const logic [3:0]kRC_SUB  	= 4'b0001;
-	const logic [3:0]kRC_LSL  	= 4'b0010;
-	const logic [3:0]kRC_LSR  	= 4'b0011;
+	const logic [3:0]kLFSR  	= 4'b0010;
+	const logic [3:0]kRC_LOAD  	= 4'b0011;
 	const logic [3:0]kRC_TRANSFER  	= 4'b0100;
-	const logic [3:0]kRC_CUSTOM  	= 4'b0101;
+	const logic [3:0]kPARITY_BIT  	= 4'b0101;
 	const logic [3:0]kREG_COPY  	= 4'b0110;
 	const logic [3:0]kADD	  	= 4'b0111;
 	const logic [3:0]kSUB	  	= 4'b1000;
@@ -24,11 +24,11 @@ package definitions;
 	const logic [3:0]kBRANCH  	= 4'b1111;
 // enum names will appear in timing diagram
 	typedef enum logic[3:0] {
-        RC_ADD, RC_SUB, RC_LSL, RC_LSR, 
-	RC_TRANSFER, RC_CUSTOM, REG_COPY, ADD, 
-	SUB, XOR, AND, LSL, 
+        RC_ADD, RC_SUB, LFSR, RC_LOAD,
+	RC_TRANSFER, PARITY_BIT, REG_COPY, ADD,
+	SUB, XOR, AND, LSL,
 	LSR, MEM_OP, CMP, BRANCH } op_mne;
 	// note: kADD is of type logic[3:0] (4-bit binary)
 //   ADD is of type enum -- equiv., but watch casting
-//   see ALU.sv for how to handle this   
+//   see ALU.sv for how to handle this
 endpackage // definitions

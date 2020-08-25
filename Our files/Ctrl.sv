@@ -17,7 +17,6 @@ module Ctrl (
   output logic [3:0] RegReadAddrA, // ADDED register read address
                     RegReadAddrB, // ADDED register read address
                     RegWriteAddr, // ADDED
-  output logic [ 9:0] PCTarg,
   output logic [1:0] BranchConditions
   );
 
@@ -29,7 +28,7 @@ module Ctrl (
 	// rc_add
 	// rc_sub
 	// rc_lsl
-	// rc_lsr
+	// rc_load
 	// rc_transfer
 	// rc_custom
 	// reg_copy
@@ -57,22 +56,18 @@ module Ctrl (
     MiddleFlag2 = Instruction[5];
     ConstantControl = Instruction[4:2];
     RegWriteAddr = Instruction[1:0];
-    if (Instruction[8:5] == 4'b0000 ||    // rc_add
-        Instruction[8:5] == 4'b0001 ||    // rc_sub
-        Instruction[8:5] == 4'b0010 ||    // rc_lsl
-        Instruction[8:5] == 4'b0011    // rc_lsr
-        ) begin
-          RegWriteAddr = 4'b1111;  // R15 is RC
-        end
 
-    if (Instruction[8:7] == 2'b00)
-      RegReadAddrA = 4'b1111;
+
+    if (Instruction[8:7] == 2'b00) begin    // rc add, sub, shift, load
+        RegWriteAddr = 4'b1111;  // R15 is RC
+        RegReadAddrA = 4'b1111;
+    end
+
 
     if (Instruction[8:5] == 4'b0100) begin // rc_transfer, store out of
       if (Instruction[4] == 1'b0) begin     // load into rc
         RegWriteAddr = 4'b1111;  // Destination is RC
-        if (Instruction[3] == 1'b0)  //  Read value from a reg
-          RegReadAddrB = Instruction[2:0];  // 3-bit, 8 potential registers
+        RegReadAddrB = Instruction[3:0];  // 4-bit, 16 potential registers
       end
       else begin                            // 01001 export out of rc into a reg
         RegReadAddrB = 4'b1111;
@@ -80,9 +75,20 @@ module Ctrl (
       end
     end
 
+    if (Instruction[8:5] == 4'b0101) begin  // Parity_bit
+        RegReadAddrA = Instruction[3:0];
+        RegReadAddrB = Instruction[3:0];    // Get Rm addr
+        RegWriteAddr = Instruction[3:0];    // Get RD addr
+    end
+
+    if (Instruction[8:5] == 4'b1111) begin  // Conditional Branching
+        RegReadAddrA = Instruction[1:0] + 4'b1011;
+    end
+
+
     if (Instruction[8:5] == 4'b0110) begin  // reg_copy
     if (Instruction[4] == 1'b0) begin       // 2-bit addr to 2-bit addr reg_copy
-      RegReadAddrA = Instruction[1:0];
+      RegWriteAddr = Instruction[1:0];
       RegReadAddrB = Instruction[3:2];
     end
     else begin                              // 4-bit reg_copy using rc. RC holds Rd addr, operand = Rm addr
@@ -90,6 +96,7 @@ module Ctrl (
       RegReadAddrB = Instruction[3:0];    // Get Rm addr
     end
     end
+
 
   end
 
@@ -104,7 +111,6 @@ assign BranchAbsOrRel = Instruction[4]; // 0 = absolute, 1 = relative
 
 // route data memory --> reg_file for loads
 //   whenever instruction = 9'b110??????;
-assign PCTarg  = Instruction[3:2];
 
 assign Ack = &Instruction;
 

@@ -14,7 +14,7 @@ module DataMem(
   logic [7:0] Core[256];			// 8x256 two-dimensional array -- the memory itself
 
 /* optional way to plant constants into DataMem at startup
-    initial 
+    initial
       $readmemh("dataram_init.list", Core);
 */
   always_comb                    // reads are combinational
@@ -32,7 +32,8 @@ module DataMem(
       Core[ 16] <= 254;          // overrides the 0  ***sample only***
       Core[244] <= 5;			 //    likewise
 	end
-    else if(WriteEn) 
+    else if(WriteEn) begin
       Core[DataAddress] <= DataIn;
+      end
 
 endmodule

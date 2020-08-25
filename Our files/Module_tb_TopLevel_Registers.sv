@@ -29,13 +29,13 @@ initial begin
 
 // Initialize DUT's register file
   for(int j=0; j<16; j++)
-    DUT.RF1.Registers[j] = 8'b1;    // default -- clear it
+    DUT.RF1.Registers[j] = 8'b0;    // default -- clear it
 
   #10ns Req = 0;
 
 
 
-  #150ns
+  #250ns
 
   for(int j=0; j<16; j++)
     $display("R %d value: %b", j, DUT.RF1.Registers[j]);
