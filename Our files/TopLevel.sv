@@ -26,6 +26,7 @@ wire        MemWrite,	   // data_memory write enable
             LoadInst, //ADDED
             ConditionalJump,	       // Whether we're supposed to jump conditionally
             BranchAbsOrRel,	// to program counter: relative or absolute
+            LoadTap,
             MiddleFlag1,  // ADDED Used for rc_transfer, arithmetic & logical operations, mem_op
             MiddleFlag2;  // ADDED Used for rc_transfer only
 wire [ 2:0] ConstantControl;  // ADDED Used for rc_custom
@@ -35,6 +36,17 @@ logic[15:0] CycleCt;	   // standalone; NOT PC!
 logic       ActuallyJump, // Whether we're gonna jump given the conditions
             Zero,         // ALU flag 1
             Negative;      // ALU flag 2
+logic [6:0] taps[9];
+
+
+assign LoadTap = (Instruction[8:4] == 5'b00100);
+always_ff @(posedge Clk) begin
+  if (LoadTap) begin
+      taps[Instruction[3:0]] <= MemReadValue;
+      $display("Loaded into Tap[%d]: %d from datamem[%d]", Instruction[3:0], MemReadValue, RegReadOutB);
+    end
+end
+
 
 
 // Combinational Logic setting ActuallyJump's value
@@ -115,9 +127,9 @@ assign PCTarg = ActuallyJump ? Intermediate_Targ : 1'b0;
 //	.raddrA ({Instruction[5:3],1'b0});
 //	.raddrB ({Instruction[5:3],1'b1});
 
-  assign ALUInA = RegReadOutA;
+  assign ALUInA = Instruction[8:4] == 5'b00101 ? taps[RegReadOutA] : RegReadOutA;
 
-  assign ALUInB = Instruction[8:7] == 2'b00 ? Instruction[4:0] : (
+  assign ALUInB = (Instruction[8:7] == 2'b00 && Instruction[6:5] != 2'b10) ? Instruction[4:0] : (
   (Instruction[8:5] == 4'b0111 ||
   Instruction[8:7] == 2'b10 ||
   Instruction[8:5] == 4'b1100 ||

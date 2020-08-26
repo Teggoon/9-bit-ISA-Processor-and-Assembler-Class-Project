@@ -42,11 +42,15 @@ initial begin
 
 
   #150ns
-  $display("core[8]: %d",DUT.DM1.Core[8]);
+  $display("core[31]: %d",DUT.DM1.Core[31]);
 
   for(int j=0; j<16; j++) begin
     $display("R %d value: %b", j, DUT.RF1.Registers[j]);
   end
+
+
+  for(int j=0; j<9; j++)
+    $display("Tap %d value: %b", j, DUT.taps[j]);
 
   #10ns
   $stop;

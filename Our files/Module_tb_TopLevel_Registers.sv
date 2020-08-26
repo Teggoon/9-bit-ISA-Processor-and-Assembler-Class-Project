@@ -39,6 +39,7 @@ initial begin
 
   for(int j=0; j<16; j++)
     $display("R %d value: %b", j, DUT.RF1.Registers[j]);
+
   #10ns
 
   $stop;

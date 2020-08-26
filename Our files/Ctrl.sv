@@ -27,7 +27,6 @@ module Ctrl (
 	// Operations that write to register:
 	// rc_add
 	// rc_sub
-	// rc_lsl
 	// rc_load
 	// rc_transfer
 	// rc_custom
@@ -44,7 +43,8 @@ module Ctrl (
 	// CMP				1110
 	// Branch			1111
 	// MEM_OP, flag 1		11011
-	assign RegWrEn = Instruction[8:6] != 3'b111 && Instruction[8:4] != 5'b11011;
+  // LFSR, flag 0
+	assign RegWrEn = Instruction[8:6] != 3'b111 && Instruction[8:4] != 5'b11011 && Instruction[8:4] != 5'b00100;
 
 	assign LoadInst = Instruction[8:4]==5'b11010;  // calls out load specially
 // reserve instruction = 9'b111111111; for Ack
@@ -72,6 +72,18 @@ module Ctrl (
       else begin                            // 01001 export out of rc into a reg
         RegReadAddrB = 4'b1111;
         RegWriteAddr = Instruction[3:0];    // 4-bit, 16 potential registers
+      end
+    end
+
+    if (Instruction[8:5] == 4'b0010) begin  // LFSR
+      if (Instruction[4] == 1'b0) begin     // Load in a tap
+        RegReadAddrA = 4'b1111;
+        RegReadAddrB = 4'b1111;
+      end
+      else begin                            // advance the state
+        RegReadAddrA = 4'b1111;
+        RegReadAddrB = Instruction[3:0];
+        RegWriteAddr = Instruction[3:0];
       end
     end
 

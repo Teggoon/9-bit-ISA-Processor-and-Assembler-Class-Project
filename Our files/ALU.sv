@@ -15,6 +15,8 @@ module ALU(
   output logic Zero,                // ALU Flag 1
                Negative            // ALU Flag 2
     );
+  logic [6:0] input_state;
+  logic [6:0] input_tap;
 
   op_mne op_mnemonic;			         // type enum: used for convenient waveform viewing
 
@@ -29,8 +31,12 @@ module ALU(
       end
       kRC_SUB : Out = InputA - InputB;
       kLFSR : begin
-      Out = {Input[5:0],^(taps&state)};
-      next_state = (state<<1) | (^(taps&state));
+        $display("Input A: %b", InputA);
+        $display("Input B: %b", InputB);
+        input_state = InputB[6:0];
+        input_tap = InputA[6:0];
+        Out = {input_state[5:0], ^ (input_tap & input_state)};
+        $display("LFSRed Out: %b", Out);
       end
       kRC_LOAD : Out = InputB;
       kRC_TRANSFER : Out = InputB;
