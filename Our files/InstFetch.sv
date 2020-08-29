@@ -27,7 +27,7 @@ module InstFetch(
 	   ProgCtr <= Target;               // Absolute jump
 	  else begin
 	   ProgCtr <= Target + ProgCtr;    // Relative jump
-     $display("Performed a relative jump. Program counter is now %d", ProgCtr);
+     $display("Performed a relative jump. Program counter is now %d", Target + ProgCtr);
      end
   end
 	else begin

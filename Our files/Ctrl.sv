@@ -58,7 +58,7 @@ module Ctrl (
     RegWriteAddr = Instruction[1:0];
 
 
-    if (Instruction[8:7] == 2'b00) begin    // rc add, sub, shift, load
+    if (Instruction[8:7] == 2'b00 && Instruction[6:5] != 2'b10) begin    // rc add, sub, load
         RegWriteAddr = 4'b1111;  // R15 is RC
         RegReadAddrA = 4'b1111;
     end

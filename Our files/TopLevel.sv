@@ -41,7 +41,18 @@ logic [6:0] taps[9];
 
 assign LoadTap = (Instruction[8:4] == 5'b00100);
 always_ff @(posedge Clk) begin
-  if (LoadTap) begin
+  if (Start == 1) begin
+    taps[0] <= 7'b1100000;
+    taps[1] <= 7'b1001000;
+    taps[2] <= 7'b1111000;
+    taps[3] <= 7'b1110010;
+    taps[4] <= 7'b1101010;
+    taps[5] <= 7'b1101001;
+    taps[6] <= 7'b1011100;
+    taps[7] <= 7'b1111110;
+    taps[8] <= 7'b1111011;
+  end
+  else if (LoadTap) begin
       taps[Instruction[3:0]] <= MemReadValue;
       $display("Loaded into Tap[%d]: %d from datamem[%d]", Instruction[3:0], MemReadValue, RegReadOutB);
     end
@@ -160,8 +171,9 @@ assign PCTarg = ActuallyJump ? Intermediate_Targ : 1'b0;
 
 // count number of instructions executed
 always_ff @(posedge Clk)
-  if (Start == 1)	   // if(start)
+  if (Start == 1)	begin   // if(start)
   	CycleCt <= 0;
+  end
   else if(Ack == 0)   // if(!halt)
   	CycleCt <= CycleCt+16'b1;
 

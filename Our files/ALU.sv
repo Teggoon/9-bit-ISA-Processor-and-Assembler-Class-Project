@@ -23,20 +23,17 @@ module ALU(
  // Our convention: if relevant, InputA is interpreted as Rd/Rm
   always_comb begin
     Out = 0;                             // No Op = default
+    input_state = 0;
+    input_tap = 0;
     case(OP)
       kRC_ADD : begin
       Out = InputA + InputB;
-      //$display("Input A: %d", InputA);
-      //$display("Input B: %d", InputB);
       end
       kRC_SUB : Out = InputA - InputB;
       kLFSR : begin
-        $display("Input A: %b", InputA);
-        $display("Input B: %b", InputB);
         input_state = InputB[6:0];
         input_tap = InputA[6:0];
         Out = {input_state[5:0], ^ (input_tap & input_state)};
-        $display("LFSRed Out: %b", Out);
       end
       kRC_LOAD : Out = InputB;
       kRC_TRANSFER : Out = InputB;
@@ -48,7 +45,9 @@ module ALU(
       kADD : Out = InputA + InputB;      // add
       kSUB : Out = InputA - InputB;       // subtract
    	  kXOR : Out = InputA ^ InputB;      // exclusive OR
-      kAND : Out = InputA & InputB;      // bitwise AND
+      kAND : begin
+        Out = InputA & InputB;      // bitwise AND
+      end
       kLSL : Out = InputA << InputB;  	     // shift left
       kLSR : Out = InputA >> InputB;
       kCMP :  Out =  InputA - InputB;

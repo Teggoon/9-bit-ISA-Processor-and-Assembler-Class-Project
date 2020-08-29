@@ -1,0 +1,77 @@
+
+# The following is a demo of our ALU's operations:
+# 1. Addition
+# 2. Subtraction
+# 3. Parity_bit
+# 4. LFSR
+# 5. Logical shift left
+# 6. Bitwise XOR
+# 7. Bitwise AND
+# 
+# 
+# We begin with addition and subtraction.
+# 
+# Loaded #2 into R15, which we call RC, our designated register that acts as an accumulator to create large numbers quickly.
+# Confirm RC (R15) value:   2
+# 
+# 
+# Instruction: RC_ADD 12 // add 12 to RC, so RC should now be 14
+# Confirm RC (R15) value:  14
+# 
+# 
+# Instruction: RC_SUB 3 // sub 3 from RC, so RC should now be 11
+# Confirm RC (R15) value:  11
+# 
+# 
+# We now test Parity_bit, which overwrites the first bit with the parity_bit of the register's original value
+# Instruction: Parity_bit R15. R15 was 0b00001011 before, so the leading parity_bit should be 1, and the output 10001011.
+# Confirm RC (R15) value: 10001011
+# 
+# 
+# LFSR test. We first move our init state from RC to another register, since RC is needed to compute which tap we're using. We'll use R6
+# Instruction: RC_STORE R6
+# Confirm R6 value: 10001011
+# We also confirm that the 9 maximal length taps had been preloaded as constants into the taps already:
+# Tap           0 value: 1100000
+# Tap           1 value: 1001000
+# Tap           2 value: 1111000
+# Tap           3 value: 1110010
+# Tap           4 value: 1101010
+# Tap           5 value: 1101001
+# Tap           6 value: 1011100
+# Tap           7 value: 1111110
+# Tap           8 value: 1111011
+# We'll use tap[0], so we set RC to be 0
+# Instruction: RC_LOADI #0
+# Confirm RC (R15) value: 00000000
+# Next we advance LFSR several times on R6 with the instruction LFSR R6:
+# R6[6:0]: 0010110
+# R6[6:0]: 0101100
+# R6[6:0]: 1011001
+# R6[6:0]: 0110011
+# R6[6:0]: 1100111
+# R6[6:0]: 1001110
+# Notice how the rightmost bit is always the XOR of the leftmost 2 bits of the previous value, corresponding with our tap.
+# That is our LFSR operation
+# 
+# 
+# Logical shift left test:
+# Our logical shift left only operates on r0-r3, so we'll copy R6 into R2.
+# Confirm R2 value: 01001110
+# We'll shift R2 left by 2 bits
+# Instruction: LSLI 2, r2
+# Confirm R2 value: 00111000
+# 
+# 
+# XOR test: we will XOR R2 with 11111111, essentially flipping all the bits
+# R2 value before instruction: 00111000
+# R2 value after instruction:  11000111
+# 
+# 
+# AND test: we'll AND R2 with  00001100
+# R2 value before instruction: 11000111
+# R2 value after instruction:  00000100
+# 
+# 
+# As you can see, everything works! I hope you are satisfied with our presentation.
+# 
