@@ -124,6 +124,6 @@ assign BranchAbsOrRel = Instruction[4]; // 0 = absolute, 1 = relative
 // route data memory --> reg_file for loads
 //   whenever instruction = 9'b110??????;
 
-assign Ack = &Instruction;
+assign Ack = Instruction == 9'b010001111;
 
 endmodule
