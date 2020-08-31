@@ -27,12 +27,14 @@ module DataMem(
 */
     if(Reset) begin
 // you may initialize your memory w/ constants, if you wish
-      for(int i=0;i<256;i++)
+      /*for(int i=0;i<256;i++)
 	    Core[i] <= 0;
       Core[ 16] <= 254;          // overrides the 0  ***sample only***
       Core[244] <= 5;			 //    likewise
+      */
 	end
     else if(WriteEn) begin
+      $display("Storing %d to %d", DataIn, DataAddress);
       Core[DataAddress] <= DataIn;
       end
 

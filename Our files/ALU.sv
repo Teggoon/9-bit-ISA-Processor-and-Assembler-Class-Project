@@ -25,6 +25,8 @@ module ALU(
     Out = 0;                             // No Op = default
     input_state = 0;
     input_tap = 0;
+    Negative = 1'b0;
+    Zero = 1'b0;
     case(OP)
       kRC_ADD : begin
       Out = InputA + InputB;
@@ -50,17 +52,16 @@ module ALU(
       end
       kLSL : Out = InputA << InputB;  	     // shift left
       kLSR : Out = InputA >> InputB;
-      kCMP :  Out =  InputA - InputB;
+      kCMP :  begin
+        $display("CMP: Comparing %d and %d", InputB, InputA);
+        Out =  InputA - InputB;
+        if (Out == 'b0) begin Zero = 1'b1; end
+        if (Out[7] == 1'b1) begin Negative = 1'b1; end
+      end
       kBRANCH : Out = 1'b1;          // TODO
     endcase
   end
 
-  always_comb begin
-    Negative = 1'b0;
-    Zero = 1'b0;
-    if (Out == 'b0) begin Zero = 1'b1; end
-    if (Out[7] == 1'b1) begin Negative = 1'b1; end
-  end
 
   always_comb
     op_mnemonic = op_mne'(OP);			 // displays operation name in waveform viewer

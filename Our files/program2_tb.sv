@@ -1,13 +1,13 @@
 // program2_tb
 // testbench for programmable message decryption (Program #2)
-// CSE141L  
+// CSE141L
 // runs program 2 (decrypt a message)
 module decrypt_tb ()        ;
   logic      clk   = 1'b0   ,      // advances simulation step-by-step
              init  = 1'b1   ,      // init (reset) command to DUT
              start = 1'b1   ;      // req (start program) command to DUT
   wire       done           ;      // done flag returned by DUT
-  logic[3:0] pre_length     ;      // space char. bytes before first char. in message  
+  logic[3:0] pre_length     ;      // space char. bytes before first char. in message
   logic[7:0] message1[52]   ,      // original raw message, in binary
              msg_padded1[64],      // original message, plus pre- and post-padding w/ ASCII spaces
              msg_crypto1[64];      // encrypted message according to the DUT
@@ -18,22 +18,22 @@ module decrypt_tb ()        ;
   int        score          ;      // count of correct encyrpted characters
 // our original American Standard Code for Information Interchange message follows
 // note in practice your design should be able to handle ANY ASCII string that is
-//  restricted to characters between space (0x20) and script f (0x9f) and shorter than 
+//  restricted to characters between space (0x20) and script f (0x9f) and shorter than
 //  53 characters in length
   string     str1  = "Mr. Watson, come here. I want to see you.";     // sample program 1 input
 //  string     str1  = " Knowledge comes, but wisdom lingers.    ";   // alternative inputs
 //  string     str1  = "  01234546789abcdefghijklmnopqrstuvwxyz. ";   //   (make up your own,
 //  string     str1  = "  f       A joke is a very serious thing.";   // 	as well)
-//  string     str1  = "                           Ajok          ";   // 
-//  string     str1  = " Knowledge comes, but wisdom lingers.    ";   // 
+//  string     str1  = "                           Ajok          ";   //
+//  string     str1  = " Knowledge comes, but wisdom lingers.    ";   //
 
 // displayed encrypted string will go here:
   string     str_enc1[64];         // program 1 desired output will go here
-  int strlen;                      // incoming string length 
+  int strlen;                      // incoming string length
   int pt_no;                       // select LFSR pattern, value 0 through 8
   int file_no;                     // write to file
 // the 8 possible maximal-length feedback tap patterns from which to choose
-  assign LFSR_ptrn[0] = 7'h60;	   // 110_0000  
+  assign LFSR_ptrn[0] = 7'h60;	   // 110_0000
   assign LFSR_ptrn[1] = 7'h48;
   assign LFSR_ptrn[2] = 7'h78;
   assign LFSR_ptrn[3] = 7'h72;
@@ -45,27 +45,28 @@ module decrypt_tb ()        ;
   always_comb begin
     pt_no = 0; //$random>>22;      // or pick a specific one
     if(pt_no>8) pt_no = 0;		   // restrict to 0 through 8 (our legal patterns)
-  end    
+  end
   assign lfsr_ptrn = LFSR_ptrn[pt_no];  // engage the selected pattern
 
 // now select a starting LFSR state -- any nonzero value will do
-  always_comb begin					   
+  always_comb begin
     LFSR_init = $random>>2;          // or set a value, such as 7'b1, for debug
-    if(!LFSR_init) LFSR_init = 7'b1; // prevents illegal starting state = 7'b0; 
+    //LFSR_init = 7'b1;          // or set a value, such as 7'b1, for debug
+    if(!LFSR_init) LFSR_init = 7'b1; // prevents illegal starting state = 7'b0;
   end
 
 // set preamble lengths for the four program runs (always > 9 but < 16)
   always_comb begin
-    pre_length = $random>>10 ;             // program 1 run
+    pre_length = 15;             // program 1 run
     if(pre_length < 10) pre_length = 10;   // prevents pre_length < 10
   end
 
 // ***** instantiate your own top level design here *****
-  top_level dut(
-    .clk     (clk  ),   // input: use your own port names, if different
-    .init    (init ),   // input: some prefer to call this ".reset"
-    .req     (start),   // input: launch program
-    .ack     (done )    // output: "program run complete"
+  TopLevel dut(
+    .Clk     (clk  ),   // input: use your own port names, if different
+    .Reset    (init ),   // input: some prefer to call this ".reset"
+    .Start     (start),   // input: launch program
+    .Ack     (done )    // output: "program run complete"
   );
 
   initial begin
@@ -73,10 +74,11 @@ module decrypt_tb ()        ;
 //    $readmemb("encoder.bin", dut.instr_rom.rom);
 // you may also pre-load desired constants, etc. into
 //   your data_mem here -- the upper addresses are reserved for your use
-//    dut.data_mem.DM[128]=8'hfe;   //whatever constants you want	
+//    dut.data_mem.DM[128]=8'hfe;   //whatever constants you want
     file_no = $fopen("msg_decoder_out.txt","w");		 // create your output file
     #0ns strlen = str1.len;       // length of string 1 (# characters between " ")
     if(strlen>52) strlen = 52;          // clip message at 52 characters
+
 // program 1 -- precompute encrypted message
     lfsr1[0]     = LFSR_init;           // any nonzero value (zero may be helpful for debug)
     $fdisplay(file_no,"run encryption program; original message = ");
@@ -100,7 +102,7 @@ module decrypt_tb ()        ;
          i,msg_padded1[i],lfsr1[i],msg_crypto1[i]);
       str_enc1[i]           = string'(msg_crypto1[i][6:0]);
     end
-	$fdisplay(file_no,"encrypted string =  "); 
+	$fdisplay(file_no,"encrypted string =  ");
 	for(int jj=0; jj<64; jj++)
       $fwrite(file_no,"%s",str_enc1[jj]);
     $fdisplay(file_no,"\n");
@@ -109,31 +111,45 @@ module decrypt_tb ()        ;
 // ***** load operands into your data memory *****
 // ***** use your instance name for data memory and its internal core *****
 //    for(int m=0; m<61; m++)
-//	  dut.DM.core[m] = 8'h20;         // pad memory w/ ASCII space characters
+//	  dut.DM1.Core[m] = 8'h20;         // pad memory w/ ASCII space characters
 //    for(int m=0; m<strlen; m++)
-//      dut.DM.core[m] = str1[m];       // overwrite/copy original string into device's data memory[0:strlen-1]
-//    dut.DM.core[61] = pre_length;     // number of bytes preceding message
-//    dut.DM.core[62] = lfsr_ptrn;      // LFSR feedback tap positions (9 possible ptrns)
-//    dut.DM.core[63] = LFSR_init;      // LFSR starting state (nonzero)
+//      dut.DM1.Core[m] = str1[m];       // overwrite/copy original string into device's data memory[0:strlen-1]
+//    dut.DM1.Core[61] = pre_length;     // number of bytes preceding message
+//    dut.DM1.Core[62] = lfsr_ptrn;      // LFSR feedback tap positions (9 possible ptrns)
+//    dut.DM1.Core[63] = LFSR_init;      // LFSR starting state (nonzero)
     for(int n=0; n<64; n++) 			// load encrypted message into data memory
-	  dut.DM.core[n+64] = msg_crypto1[n];
+	  dut.DM1.Core[n+64] = msg_crypto1[n];
+
+    $display("Done with all the preparation stuff. About to run Decryption program");
     #20ns init  = 1'b0;				  // suggestion: reset = 1 forces your program counter to 0
-	#10ns start = 1'b0; 			  //   request/start = 1 holds your program counter 
+	#10ns start = 1'b0; 			  //   request/start = 1 holds your program counter
     #60ns;                            // wait for 6 clock cycles of nominal 10ns each
+
+
     wait(done);                       // wait for DUT's ack/done flag to go high
+
+    for(int j=0; j<16; j++)
+      $display("R %d value: %d or %b", j, dut.RF1.Registers[j], dut.RF1.Registers[j]);
+
+    for(int j=0; j<9; j++)
+      $display("Tap %d value: %d or %b", j, dut.taps[j], dut.taps[j]);
+
+    for(int j=0; j<74; j++)
+      $display("Mem[%d] value: %d or %b", j, dut.DM1.Core[j], dut.DM1.Core[j]);
+
     #10ns $fdisplay(file_no,"");
     $fdisplay(file_no,"program 2:");
 // ***** reads your results and compares to test bench
 // ***** use your instance name for data memory and its internal core *****
     for(int n=0; n<64; n++)	begin
-	  if(msg_padded1[n]+8'h20==dut.DM.core[n])	begin
+	  if(msg_padded1[n]+8'h20==dut.DM1.Core[n])	begin
         $fdisplay(file_no,"%d bench msg: %s %h dut msg: %h",
-          n, msg_padded1[n]+8'h20, msg_padded1[n]+8'h20, dut.DM.core[n]);
+          n, msg_padded1[n]+8'h20, msg_padded1[n]+8'h20, dut.DM1.Core[n]);
 		score++;
 	  end
       else
         $fdisplay(file_no,"%d bench msg: %s %h dut msg: %h  OOPS!",
-          n, msg_padded1[n]+8'h20, msg_padded1[n]+8'h20, dut.DM.core[n]);
+          n, msg_padded1[n]+8'h20, msg_padded1[n]+8'h20, dut.DM1.Core[n]);
     end
     $fdisplay(file_no,"score = %d/64",score);
     #20ns $fclose(file_no);

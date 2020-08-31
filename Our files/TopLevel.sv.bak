@@ -120,7 +120,7 @@ assign PCTarg = ActuallyJump ? Intermediate_Targ : 1'b0;
   .MiddleFlag2   (MiddleFlag2),
   .ConstantControl  (ConstantControl),
   .BranchConditions (BranchConditions),
-  .Ack              (Ack)
+  .Ack      (Ack)
   );
 // instruction ROM
   InstROM #(.W(9)) IR1(
@@ -129,7 +129,6 @@ assign PCTarg = ActuallyJump ? Intermediate_Targ : 1'b0;
 	);
 
   assign FinalRegWriteAddr = (Instruction[8:4] == 5'b01101 ) ? RegReadOutA : RegWriteAddr;
-  //assign Ack = Instruction == 9'b010001111
   assign LoadInst = Instruction[8:4]==5'b11010;  // calls out load specially
 // reg file
 	RegFile #(.W(8),.D(4)) RF1 (
@@ -147,6 +146,7 @@ assign PCTarg = ActuallyJump ? Intermediate_Targ : 1'b0;
 //	.raddrB ({Instruction[5:3],1'b1});
 
   assign ALUInA = Instruction[8:4] == 5'b00101 ? taps[RegReadOutA] : RegReadOutA;
+  assign Ack = Instruction == 9'b010001111;
   assign ALUInB = (Instruction[8:7] == 2'b00 && Instruction[6:5] != 2'b10) ? Instruction[4:0] : (
   (Instruction[8:5] == 4'b0111 ||
   Instruction[8:7] == 2'b10 ||

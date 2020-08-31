@@ -22,7 +22,7 @@ module InstFetch(
 	else if(Start)						// hold while start asserted; commence when released
 	  ProgCtr <= ProgCtr;
 	else if(Jump) begin
-    $display("Actually jumping! Target is %d", Target);
+    //$display("Actually jumping! Target is %d", Target);
     if (BranchAbsOrRel == 0)
 	   ProgCtr <= Target;               // Absolute jump
 	  else begin
@@ -31,8 +31,8 @@ module InstFetch(
      end
   end
 	else begin
-    //$display("\n\nIncreased program counter: %d" , ProgCtr);
 	  ProgCtr <= ProgCtr+'b1; 	        // default increment (no need for ARM/MIPS +4 -- why?)
+    //$display("\n\nIncreased program counter: %d" , ProgCtr+'b1);
     end
 endmodule
 

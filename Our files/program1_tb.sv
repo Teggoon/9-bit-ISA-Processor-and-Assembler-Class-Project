@@ -44,10 +44,10 @@ module encrypt_tb ()        ;
   assign LFSR_ptrn[7] = 7'h7E;
   assign LFSR_ptrn[8] = 7'h7B;
   always_comb begin
-    pt_no = 0; //$random>>22;      // or pick a specific one
+    pt_no = 8; //$random>>22;      // or pick a specific one
     if(pt_no>8) pt_no = 0;		   // restrict to 0 through 8 (our legal patterns)
   end
-  assign lfsr_ptrn = LFSR_ptrn[pt_no];  // engage the selected pattern
+  //assign lfsr_ptrn = LFSR_ptrn[pt_no];  // engage the selected pattern
 
 // now select a starting LFSR state -- any nonzero value will do
   always_comb begin
@@ -57,16 +57,16 @@ module encrypt_tb ()        ;
 
 // set preamble lengths for the four program runs (always > 9 but < 16)
   always_comb begin
-    pre_length = 10; //$random>>10 ;             // program 1 run
+    pre_length = 13; //$random>>10 ;             // program 1 run
     if(pre_length < 10) pre_length = 10;   // prevents pre_length < 10
   end
 
 // ***** instantiate your own top level design here *****
-  top_level dut(
-    .clk     (clk  ),   // input: use your own port names, if different
-    .init    (init ),   // input: some prefer to call this ".reset"
-    .req     (start),   // input: launch program
-    .ack     (done )    // output: "program run complete"
+  TopLevel dut(
+    .Clk     (clk  ),   // input: use your own port names, if different
+    .Reset    (init ),   // input: some prefer to call this ".reset"
+    .Start     (start),   // input: launch program
+    .Ack     (done )    // output: "program run complete"
   );
 
   initial begin
@@ -79,7 +79,8 @@ module encrypt_tb ()        ;
     file_no = $fopen("msg_enocder_out.txt","w");		 // create your output file
     #0ns strlen = str1.len;       // length of string 1 (# characters between " ")
     if(strlen>52) strlen = 52;          // clip message at 52 characters
-
+    lfsr_ptrn = LFSR_ptrn[pt_no];
+    $display("lfsr_ptrn: %b", lfsr_ptrn);
 // program 1 -- precompute encrypted message
     lfsr1[0]     = LFSR_init;           // any nonzero value (zero may be helpful for debug)
     $fdisplay(file_no,"run encryption program; original message = ");
@@ -93,6 +94,8 @@ module encrypt_tb ()        ;
 // compute the LFSR sequence
     for (int ii=0;ii<63;ii++)
       lfsr1[ii+1] = {(lfsr1[ii][5:0]),(^(lfsr1[ii]&lfsr_ptrn))};
+
+    $display("TB about to encrypt messages by itself.");
 
 // encrypt the message charater-by-character, then prepend the parity
 //  testbench will change on falling clocks to avoid race conditions at rising clocks
@@ -108,37 +111,56 @@ module encrypt_tb ()        ;
       $fwrite(file_no,"%s",str_enc1[jj]);
     $fdisplay(file_no,"\n");
 
+
+$display("About to run encryption program using DUT");
+
 // run encryption program
 // ***** load operands into your data memory *****
 // ***** use your instance name for data memory and its internal core *****
     for(int m=0; m<61; m++)
-	  dut.DM.core[m] = 8'h20;         // pad memory w/ ASCII space characters
+	  dut.DM1.Core[m] = 8'h20;         // pad memory w/ ASCII space characters
     for(int m=0; m<strlen; m++)
-      dut.DM.core[m] = str1[m];       // overwrite/copy original string into device's data memory[0:strlen-1]
-    dut.DM.core[61] = pre_length;     // number of bytes preceding message
-    dut.DM.core[62] = lfsr_ptrn;      // LFSR feedback tap positions (9 possible ptrns)
-    dut.DM.core[63] = LFSR_init;      // LFSR starting state (nonzero)
+      dut.DM1.Core[m] = str1[m];       // overwrite/copy original string into device's data memory[0:strlen-1]
+
+    dut.DM1.Core[61] = pre_length;     // number of bytes preceding message
+    dut.DM1.Core[62] = lfsr_ptrn;      // LFSR feedback tap positions (9 possible ptrns)
+    dut.DM1.Core[63] = LFSR_init;      // LFSR starting state (nonzero)
     #20ns init  = 1'b0;				  // suggestion: reset = 1 forces your program counter to 0
-	#10ns start = 1'b0; 			  //   request/start = 1 holds your program counter
+    #10ns start = 1'b0; 			  //   request/start = 1 holds your program counter
+    $display("Loaded all elements into DataMem. Commencing program run");
+    $display("Check DataMem at core[61]: %d", dut.DM1.Core[61]);
+    $display("Check DataMem at core[62]: %b", dut.DM1.Core[62]);
+    $display("Check DataMem at core[63]: %b", dut.DM1.Core[63]);
     #60ns;                            // wait for 6 clock cycles of nominal 10ns each
+
     wait(done);                       // wait for DUT's ack/done flag to go high
+    for(int j=0; j<16; j++)
+      $display("R %d value: %d", j, dut.RF1.Registers[j]);
+
+    for(int j=0; j<9; j++)
+      $display("Tap %d value: %d", j, dut.taps[j]);
+
+    for(int j=64; j<128; j++)
+      $display("Mem[%d] value: %d", j, dut.DM1.Core[j]);
+
     #10ns $fdisplay(file_no,"");
     $fdisplay(file_no,"program 1:");
 // ***** reads your results and compares to test bench
 // ***** use your instance name for data memory and its internal core *****
     for(int n=0; n<64; n++)	begin
-	  if(msg_crypto1[n]==dut.DM.core[n+64])	begin
+	  if(msg_crypto1[n]==dut.DM1.Core[n+64])	begin
         $fdisplay(file_no,"%d bench msg: %s %h dut msg: %h",
-          n, msg_crypto1[n][6:0]+8'h20, msg_crypto1[n], dut.DM.core[n+64]);
+          n, msg_crypto1[n][6:0]+8'h20, msg_crypto1[n], dut.DM1.Core[n+64]);
 		score++;
 	  end
       else
         $fdisplay(file_no,"%d bench msg: %s %h dut msg: %h  OOPS!",
-          n, msg_crypto1[n][6:0]+8'h20, msg_crypto1[n], dut.DM.core[n+64]);
+          n, msg_crypto1[n][6:0]+8'h20, msg_crypto1[n], dut.DM1.Core[n+64]);
     end
     $fdisplay(file_no,"score = %d/64",score);
     #20ns $fclose(file_no);
     #20ns $stop;
+
   end
 
 always begin     // continuous loop
