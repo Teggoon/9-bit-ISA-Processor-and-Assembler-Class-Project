@@ -8,6 +8,15 @@ The challenges we faced stemmed from the software requiring more from the hardwa
 [Link to ISA documentation]
 https://docs.google.com/document/d/1iK5kuPq0JqmnCFnZfnKvTf0ytXoidMZcLtLtgz3isYc/edit?usp=sharing
 
+[Link to Program 1 assembly]
+https://docs.google.com/document/d/1KgsQfIg2DU55Hbpjo8npVDVkgOTwy1a6dxKeTOyKp-E/edit?usp=sharing
+
+[Link to Program 2 assembly]
+https://docs.google.com/document/d/1RECWGF-bFJF1JXgO5PXHi3HBlkDz00jyUDfijUO461E/edit?usp=sharing
+
+[Link to Program 3 assembly]
+https://docs.google.com/document/d/1bBnk6EC7Hwo6WIxf7nhv0Xnydu2-t8HsGm5bxLSw5oY/edit?usp=sharing
+
 [Link to cloud recording]
 https://ucsd.zoom.us/rec/share/OcR7hI3ylgy0Bitjhy4VCzttGJH8-PlInxGvF0gOy9grIGLraF3TffyT6fFUheO_.THde0hblNsh_myO4
 
