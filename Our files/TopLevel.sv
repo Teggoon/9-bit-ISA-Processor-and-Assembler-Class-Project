@@ -178,7 +178,8 @@ assign PCTarg = ActuallyJump ? Intermediate_Targ : 1'b0;
 
 // count number of instructions executed
 always_ff @(posedge Clk) begin
-  //$display("Instruction: %b", Instruction);
+  /*for(int j=0; j<16; j++)
+    $display("Printed R %d value: %d", j, RF1.Registers[j]);*/
   //$display("Zero %b, Neg %b", Zero  , Negative );
   if (Instruction == 9'b010111111) begin
     for(int j=0; j<16; j++)

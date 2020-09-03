@@ -23,11 +23,13 @@ module InstFetch(
 	  ProgCtr <= ProgCtr;
 	else if(Jump) begin
     //$display("Actually jumping! Target is %d", Target);
-    if (BranchAbsOrRel == 0)
+    if (BranchAbsOrRel == 0) begin
+    //$display("Performed an absolute jump. Program counter is now %d", Target);
 	   ProgCtr <= Target;               // Absolute jump
+     end
 	  else begin
 	   ProgCtr <= Target + ProgCtr;    // Relative jump
-     $display("Performed a relative jump. Program counter is now %d", Target + ProgCtr);
+
      end
   end
 	else begin

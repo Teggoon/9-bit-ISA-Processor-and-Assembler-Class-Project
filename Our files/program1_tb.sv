@@ -72,6 +72,7 @@ module encrypt_tb ()        ;
   initial begin
 //***** pre-load your instruction ROM here or inside itself	*****
 //    $readmemb("encoder.bin", dut.instr_rom.rom);
+  $readmemb("program1_mc.txt", dut.IR1.inst_rom);
 // you may also pre-load desired constants, etc. into
 //   your data_mem here -- the upper addresses are reserved for your use
 //    dut.data_mem.DM[128]=8'hfe;   //whatever constants you want
@@ -128,9 +129,6 @@ $display("About to run encryption program using DUT");
     #20ns init  = 1'b0;				  // suggestion: reset = 1 forces your program counter to 0
     #10ns start = 1'b0; 			  //   request/start = 1 holds your program counter
     $display("Loaded all elements into DataMem. Commencing program run");
-    $display("Check DataMem at core[61]: %d", dut.DM1.Core[61]);
-    $display("Check DataMem at core[62]: %b", dut.DM1.Core[62]);
-    $display("Check DataMem at core[63]: %b", dut.DM1.Core[63]);
     #60ns;                            // wait for 6 clock cycles of nominal 10ns each
 
     wait(done);                       // wait for DUT's ack/done flag to go high

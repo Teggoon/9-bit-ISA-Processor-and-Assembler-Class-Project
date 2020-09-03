@@ -53,7 +53,7 @@ module ALU(
       kLSL : Out = InputA << InputB;  	     // shift left
       kLSR : Out = InputA >> InputB;
       kCMP :  begin
-        $display("CMP: Comparing %d and %d", InputB, InputA);
+        //$display("CMP: Comparing %d and %d", InputB, InputA);
         Out =  InputA - InputB;
         if (Out == 'b0) begin Zero = 1'b1; end
         if (Out[7] == 1'b1) begin Negative = 1'b1; end

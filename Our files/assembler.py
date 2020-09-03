@@ -1,8 +1,9 @@
 print('Running Assembler:')
 
-filename = "program2.txt"
-read_file = open(filename, "r")
-w_file = open("program2_mc.txt", "w")
+readfilename = sys.argv[1]
+writefilename = sys.argv[2]
+read_file = open(readfilename, "r")
+w_file = open(writefilename, "w")
 
 PREMAPPED_BITS = {
     "rc_add":           "0000",
@@ -48,7 +49,7 @@ w_file.write("001100000 //buffer no-op\n");
 num_of_error = 0;
 addr = 2;
 
-with open(filename, 'r') as f:
+with open(readfilename, 'r') as f:
   for line in f:
 
       translated = "";

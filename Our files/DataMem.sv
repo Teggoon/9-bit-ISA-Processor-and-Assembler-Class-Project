@@ -34,7 +34,7 @@ module DataMem(
       */
 	end
     else if(WriteEn) begin
-      $display("Storing %d to %d", DataIn, DataAddress);
+      //$display("Storing %d to %d", DataIn, DataAddress);
       Core[DataAddress] <= DataIn;
       end
 

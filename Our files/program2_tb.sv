@@ -71,7 +71,7 @@ module decrypt_tb ()        ;
 
   initial begin
 //***** pre-load your instruction ROM here or inside itself	*****
-//    $readmemb("encoder.bin", dut.instr_rom.rom);
+    $readmemb("program2_mc.txt", dut.IR1.inst_rom);
 // you may also pre-load desired constants, etc. into
 //   your data_mem here -- the upper addresses are reserved for your use
 //    dut.data_mem.DM[128]=8'hfe;   //whatever constants you want

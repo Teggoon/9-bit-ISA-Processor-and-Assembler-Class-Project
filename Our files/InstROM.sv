@@ -39,7 +39,7 @@ module InstROM #(parameter A=10, W=10) (
   always_comb InstOut = inst_rom[InstAddress];
 
   initial begin		                  // load from external text file
-  	 $readmemb("program2_mc.txt",inst_rom);
+  	 //$readmemb("program1_mc.txt",inst_rom);
   end
 
 endmodule
